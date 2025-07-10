@@ -37,8 +37,18 @@ export default function LoginPage() {
  };
 
  return (
-   <main className="min-h-screen bg-gray-900 py-12 px-4">
-     <div className="max-w-md mx-auto">
+   <main className="min-h-screen relative py-12 px-4">
+     {/* Background Image */}
+     <div 
+       className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+       style={{
+         backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167375/IMG_0497_1_jcvtji.jpg)'
+       }}
+     />
+     {/* Dark overlay for better text readability */}
+     <div className="absolute inset-0 bg-black bg-opacity-60" />
+     
+     <div className="max-w-md mx-auto relative z-10">
        {/* Botón de regreso */}
        <Link
          href="/"

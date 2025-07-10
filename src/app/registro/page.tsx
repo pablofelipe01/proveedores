@@ -5,8 +5,18 @@ import RegistroForm from '@/components/RegistroForm'
 
 export default function RegistroPage() {
  return (
-   <main className="min-h-screen bg-gray-900 py-6 sm:py-12">
-     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+   <main className="min-h-screen relative py-6 sm:py-12">
+     {/* Background Image */}
+     <div 
+       className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+       style={{
+         backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167490/20032025-DSC_3694_1_1_ztvhwm.jpg)'
+       }}
+     />
+     {/* Dark overlay for better text readability */}
+     <div className="absolute inset-0 bg-black bg-opacity-60" />
+     
+     <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
        {/* Botón de regreso */}
        <Link
          href="/"

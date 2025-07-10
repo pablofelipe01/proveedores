@@ -65,19 +65,39 @@ export default function NuevaCuentaCobroPage() {
     return () => controller.abort()
   }, [router])
 
-  if (isLoading) {
+      if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Spinner className="h-12 w-12 text-white" />
-        <span className="sr-only">Cargando...</span>
+      <div className="min-h-screen relative flex items-center justify-center">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167682/20032025-DSC_3429_1_1_kudfki.jpg)'
+          }}
+        />
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-60" />
+        <div className="relative z-10">
+          <Spinner className="h-12 w-12 text-white" />
+          <span className="sr-only">Cargando...</span>
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-500 text-center">
+      <div className="min-h-screen relative flex items-center justify-center">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167682/20032025-DSC_3429_1_1_kudfki.jpg)'
+          }}
+        />
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-60" />
+        <div className="text-red-500 text-center relative z-10">
           <h2 className="text-xl font-bold mb-4">Error de verificación</h2>
           <p>{error}</p>
         </div>
@@ -90,8 +110,18 @@ export default function NuevaCuentaCobroPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen relative py-12">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167682/20032025-DSC_3429_1_1_kudfki.jpg)'
+        }}
+      />
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-60" />
+      
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <Link
          href="/dashboard"
          className="inline-flex items-center text-gray-400 hover:text-white transition-colors mb-6"

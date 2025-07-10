@@ -4,8 +4,18 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col justify-between p-8">
-      <main className="flex flex-col items-center justify-center flex-grow text-center">
+    <div className="min-h-screen relative flex flex-col justify-between p-8">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167278/IMG_0498_1_oqi6c7.jpg)'
+        }}
+      />
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-60" />
+      
+      <main className="flex flex-col items-center justify-center flex-grow text-center relative z-10">
         <div className="mb-8">
           {/* Logo con efecto glow */}
           <div className="relative w-[200px] h-[200px] mx-auto filter drop-shadow-glow">
@@ -48,7 +58,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="text-center text-gray-500 py-8">
+      <footer className="text-center text-gray-500 py-8 relative z-10">
         <p>&copy; {new Date().getFullYear()} SIRIUS REGENERATIVE. Todos los derechos reservados.</p>
       </footer>
     </div>
