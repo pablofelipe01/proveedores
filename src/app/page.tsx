@@ -17,8 +17,13 @@ export default function Home() {
       
       <main className="flex flex-col items-center justify-center flex-grow text-center relative z-10">
         <div className="mb-8">
-          {/* Logo con efecto glow */}
-          <div className="relative w-[200px] h-[200px] mx-auto filter drop-shadow-glow">
+          {/* Logo con efecto glow - Clickable */}
+          <Link 
+            href="https://www.siriusagentic.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative w-[200px] h-[200px] mx-auto filter drop-shadow-glow block"
+          >
             <Image
               src="/logo.png"
               alt="Sirius Regenerative"
@@ -27,7 +32,7 @@ export default function Home() {
               className="mb-4"
               priority
             />
-          </div>
+          </Link>
           <h2 className="text-2xl font-bold text-indigo-400">
             SIRIUS REGENERATIVE
           </h2>
