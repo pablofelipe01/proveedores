@@ -107,7 +107,7 @@ export default function DashboardPage() {
                 />
               </svg>
             </Link>
-            <h1 className="text-2xl font-bold text-white">Dashboard de Proveedor</h1>
+            <h1 className="text-2xl font-bold text-white">Dashboard de Proveedor Contratista</h1>
           </div>
 
           {/* Menú hamburguesa para móviles */}

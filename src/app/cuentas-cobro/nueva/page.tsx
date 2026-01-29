@@ -150,7 +150,7 @@ export default function NuevaCuentaCobroPage() {
                 Nueva Cuenta de Cobro
               </h1>
               <p className="mt-2 text-gray-400">
-                Proveedor: {proveedor.nombreCompleto}
+                Proveedor Contratista: {proveedor.nombreCompleto}
               </p>
               <p className="text-sm text-green-500 mt-1">
                 Estado: {proveedor.estado}

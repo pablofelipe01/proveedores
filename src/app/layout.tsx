@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "SIRIUS REGENERATIVE",
-  description: "Portal de Proveedores SIRIUS REGENERATIVE",
+  description: "Portal de Proveedores Contratistas SIRIUS REGENERATIVE",
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",

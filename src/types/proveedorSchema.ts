@@ -15,9 +15,9 @@ export const registroSchema = z.object({
   tipoPersona: tipoPersonaEnum,
   tipoDocumento: documentoEnum,
   numeroDocumento: z.string().min(5).max(20),
-  nombres: z.string().min(2).max(50).optional(),
-  apellidos: z.string().min(2).max(50).optional(),
-  razonSocial: z.string().min(2).max(100).optional(),
+  nombres: z.string().max(50).optional().or(z.literal('')),
+  apellidos: z.string().max(50).optional().or(z.literal('')),
+  razonSocial: z.string().max(100).optional().or(z.literal('')),
   telefono: z.string().min(7).max(15),
   direccion: z.string().min(5).max(100),
   ciudad: z.enum(ciudadesArray),
@@ -30,12 +30,12 @@ export const registroSchema = z.object({
 }).refine(
   (data) => {
     if (data.tipoPersona === 'Natural') {
-      return data.nombres && data.apellidos;
+      return data.nombres && data.nombres.length >= 2 && data.apellidos && data.apellidos.length >= 2;
     }
-    return data.razonSocial;
+    return data.razonSocial && data.razonSocial.length >= 2;
   },
   {
-    message: "Nombres y apellidos son requeridos para persona natural, razón social para persona jurídica"
+    message: "Para persona natural: nombres y apellidos son requeridos (mín. 2 caracteres). Para persona jurídica: razón social es requerida (mín. 2 caracteres)"
   }
 );
 

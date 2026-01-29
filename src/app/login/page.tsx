@@ -73,7 +73,7 @@ export default function LoginPage() {
 
        <div className="text-center mb-8">
          <h1 className="text-2xl font-bold text-white">
-           Acceso de Proveedores
+           Acceso de Proveedores Contratistas
          </h1>
          <p className="mt-2 text-gray-400">
            Ingrese su número de documento para acceder

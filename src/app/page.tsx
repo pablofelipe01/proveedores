@@ -39,7 +39,7 @@ export default function Home() {
         </div>
 
         <p className="text-xl text-gray-400 mb-12 max-w-2xl">
-          Si eres proveedor o prestador de servicios, accede a tu portal. 
+          Si eres proveedor contratista o prestador de servicios, accede a tu portal. 
           Si aún no lo eres, únete a nuestra red.
         </p>
 
@@ -49,7 +49,7 @@ export default function Home() {
             className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 
               transition-colors duration-200 text-lg font-medium"
           >
-            Acceder como Proveedor
+            Acceder como Proveedor Contratista
           </Link>
 
           <Link
@@ -58,7 +58,7 @@ export default function Home() {
               rounded-lg hover:bg-indigo-500 hover:text-white transition-colors duration-200 
               text-lg font-medium"
           >
-            Crear Perfil de Proveedor
+            Crear Perfil de Proveedor Contratista
           </Link>
         </div>
       </main>

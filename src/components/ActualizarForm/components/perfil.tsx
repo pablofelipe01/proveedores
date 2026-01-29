@@ -63,7 +63,7 @@ export default function Perfil() {
 
   return (
     <div>
-      <h2>Perfil del Proveedor</h2>
+      <h2>Perfil del Proveedor Contratista</h2>
       {proveedor && (
         <div>
           <p><strong>Nombre Completo:</strong> {proveedor.nombres} {proveedor.apellidos}</p>

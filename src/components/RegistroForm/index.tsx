@@ -39,6 +39,13 @@ const RegistroForm = forwardRef<RegistroFormHandle, RegistroFormProps>((props, r
  const tipoPersona = watch('tipoPersona');
  const tipoDocumento = watch('tipoDocumento');
 
+ // Debug: mostrar errores en consola
+ React.useEffect(() => {
+   if (Object.keys(errors).length > 0) {
+     console.log('=== ERRORES DE VALIDACIÓN ===', errors);
+   }
+ }, [errors]);
+
  const handlers = createHandlers(setValue, setDocumentos, ciudadesColombia);
  const onSubmit = createSubmitHandler(setIsSubmitting, documentos, tipoPersona);
 
@@ -83,7 +90,14 @@ const RegistroForm = forwardRef<RegistroFormHandle, RegistroFormProps>((props, r
                Hay errores en el formulario
              </h3>
              <div className="mt-2 text-sm text-red-300">
-               Por favor, revise los campos marcados en rojo.
+               <p>Por favor, revise los campos marcados en rojo.</p>
+               <ul className="list-disc list-inside mt-2">
+                 {Object.entries(errors).map(([field, error]) => (
+                   <li key={field}>
+                     <strong>{field}:</strong> {error?.message || 'Campo inválido'}
+                   </li>
+                 ))}
+               </ul>
              </div>
            </div>
          </div>

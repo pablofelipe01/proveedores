@@ -23,7 +23,7 @@ export default function PruebaRegistroPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            Registro de Proveedor
+            Registro de Proveedor Contratista
           </h1>
           <p className="text-gray-400">
             Complete el formulario con sus datos y documentos requeridos

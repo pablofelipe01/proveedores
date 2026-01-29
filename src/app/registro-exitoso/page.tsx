@@ -14,11 +14,11 @@ const Exito = () => {
          </div>
          
          <h1 className="text-2xl font-bold text-white mb-4">
-           ¡Registro Exitoso!
+           ¡Registro de Proveedor Contratista Exitoso!
          </h1>
          
          <p className="text-gray-300 mb-8">
-           Tu información ha sido registrada correctamente. Te contactaremos pronto para confirmar tus datos.
+           Tu información como proveedor contratista ha sido registrada correctamente. Te contactaremos pronto para confirmar tus datos.
          </p>
 
          <Link 
