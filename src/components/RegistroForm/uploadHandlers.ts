@@ -34,7 +34,7 @@ export const uploadHandlers = {
       formData.append('file', file);
       formData.append('upload_preset', 'proveedores_app');
       formData.append('folder', folder);
-      formData.append('public_id', `${folder}/${Date.now()}`);
+      formData.append('public_id', `${Date.now()}`);
       formData.append('resource_type', 'auto');
 
       const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
