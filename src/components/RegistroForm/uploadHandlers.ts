@@ -96,42 +96,26 @@ export const uploadHandlers = {
         throw new Error(`Documentos faltantes: ${missing.join(', ')}`);
       }
 
-      console.log('Iniciando uploads en paralelo...');
+      // Uploads secuenciales para evitar rate limiting de Cloudinary
+      console.log('Iniciando uploads secuenciales...');
       
-      const results = await Promise.allSettled([
-        uploadHandlers.uploadToCloudinary(documentos.rut.file, 'rut'),
-        uploadHandlers.uploadToCloudinary(documentos.documento.file, 'documento'),
-        uploadHandlers.uploadToCloudinary(documentos.certificadoBancario.file, 'certificado')
-      ]);
-
-      console.log('=== RESULTADOS DE UPLOADS ===');
-      const docNames = ['RUT', 'Documento', 'Certificado Bancario'];
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          console.log(`✅ ${docNames[index]}: ${result.value}`);
-        } else {
-          console.error(`❌ ${docNames[index]}: ${result.reason?.message || result.reason}`);
-        }
-      });
-
-      // Verificar si alguno falló
-      const failedUploads = results.filter((r, i) => {
-        if (r.status === 'rejected') return true;
-        return false;
-      });
-
-      if (failedUploads.length > 0) {
-        const firstError = results.find(r => r.status === 'rejected') as PromiseRejectedResult;
-        throw firstError.reason;
-      }
-
-      const [rutResult, documentoResult, certificadoResult] = results as PromiseFulfilledResult<string>[];
+      console.log('1/3 Subiendo RUT...');
+      const rutUrl = await uploadHandlers.uploadToCloudinary(documentos.rut.file, 'rut');
+      console.log('✅ RUT subido:', rutUrl);
+      
+      console.log('2/3 Subiendo Documento...');
+      const documentoUrl = await uploadHandlers.uploadToCloudinary(documentos.documento.file, 'documento');
+      console.log('✅ Documento subido:', documentoUrl);
+      
+      console.log('3/3 Subiendo Certificado Bancario...');
+      const certificadoBancarioUrl = await uploadHandlers.uploadToCloudinary(documentos.certificadoBancario.file, 'certificado');
+      console.log('✅ Certificado Bancario subido:', certificadoBancarioUrl);
 
       console.log('=== UPLOAD ALL DOCUMENTS EXITOSO ===');
       return {
-        rutUrl: rutResult.value,
-        documentoUrl: documentoResult.value,
-        certificadoBancarioUrl: certificadoResult.value
+        rutUrl,
+        documentoUrl,
+        certificadoBancarioUrl
       };
     } catch (error) {
       console.error('=== ERROR EN uploadAllDocuments ===');
