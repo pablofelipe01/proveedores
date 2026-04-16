@@ -1,7 +1,9 @@
 // src/components/CuentaCobroForm/SignaturePad.tsx
 'use client'
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import SignaturePadLib from 'signature_pad';
+import toast from 'react-hot-toast';
+import { uploadToCloudinary } from '@/utils/cloudinary';
 
 interface SignaturePadProps {
   onSave: (signature: string) => void;
@@ -11,6 +13,8 @@ export function SignatureComponent({ onSave }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePadLib | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,16 +72,37 @@ export function SignatureComponent({ onSave }: SignaturePadProps) {
 
   const handleClear = () => {
     padRef.current?.clear();
+    setIsSaved(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!padRef.current || padRef.current.isEmpty()) {
-      alert('Por favor firme antes de guardar');
+      toast.error('Por favor firme antes de guardar');
       return;
     }
+
+    setIsSaving(true);
     
-    const dataUrl = padRef.current.toDataURL('image/png');
-    onSave(dataUrl);
+    try {
+      const dataUrl = padRef.current.toDataURL('image/png');
+      
+      // Convertir base64 a File para subir a Cloudinary
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'firma.png', { type: 'image/png' });
+      
+      // Subir a Cloudinary
+      const firmaUrl = await uploadToCloudinary(file, 'firmas');
+      
+      onSave(firmaUrl);
+      setIsSaved(true);
+      toast.success('Firma guardada correctamente');
+    } catch (error) {
+      console.error('Error al guardar firma:', error);
+      toast.error('No se pudo guardar la firma. Intenta nuevamente.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -99,16 +124,41 @@ export function SignatureComponent({ onSave }: SignaturePadProps) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            disabled={isSaving}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Limpiar
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+            disabled={isSaving || isSaved}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors flex items-center gap-2
+              ${isSaved 
+                ? 'bg-green-600 cursor-default' 
+                : isSaving 
+                  ? 'bg-indigo-400 cursor-not-allowed' 
+                  : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
           >
-            Guardar Firma
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+              </>
+            ) : isSaved ? (
+              <>
+                <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Firma Guardada
+              </>
+            ) : (
+              'Guardar Firma'
+            )}
           </button>
         </div>
       </div>

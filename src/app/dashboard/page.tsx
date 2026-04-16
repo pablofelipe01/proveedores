@@ -1,8 +1,9 @@
 // src/app/dashboard/page.tsx
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { DocumentUpload } from '@/components/CargarArchivos/DocumentUpload';
+import { CuentasCobroFilters, FilterValues } from '@/components/Dashboard/CuentasCobroFilters';
 import { Menu, X } from 'lucide-react';
 
 
@@ -11,6 +12,7 @@ interface DashboardData {
  pendientes: number;
  aprobadas: number;
  comentariosProveedor: string;
+ resultadosFiltrados: number;
  cuentasRecientes: {
    id: string;
    fecha: string;
@@ -31,37 +33,85 @@ const formatCurrency = (value: number): string => {
 export default function DashboardPage() {
  const [data, setData] = useState<DashboardData | null>(null);
  const [isLoading, setIsLoading] = useState(true);
+ const [isFiltering, setIsFiltering] = useState(false);
  const [error, setError] = useState('');
  const [menuOpen, setMenuOpen] = useState(false);
+ const [currentFilters, setCurrentFilters] = useState<FilterValues>({
+   estado: 'todas',
+   fechaInicio: '',
+   fechaFin: '',
+   montoMin: '',
+   montoMax: '',
+   busqueda: '',
+ });
+
+ const fetchDashboardData = useCallback(async (filters?: FilterValues) => {
+   try {
+     const isInitialLoad = !filters;
+     if (isInitialLoad) {
+       setIsLoading(true);
+     } else {
+       setIsFiltering(true);
+     }
+
+     // Construir query params
+     const params = new URLSearchParams();
+     const activeFilters = filters || currentFilters;
+     
+     if (activeFilters.estado && activeFilters.estado !== 'todas') {
+       params.append('estado', activeFilters.estado);
+     }
+     if (activeFilters.fechaInicio) {
+       params.append('fecha_inicio', activeFilters.fechaInicio);
+     }
+     if (activeFilters.fechaFin) {
+       params.append('fecha_fin', activeFilters.fechaFin);
+     }
+     if (activeFilters.montoMin) {
+       params.append('monto_min', activeFilters.montoMin);
+     }
+     if (activeFilters.montoMax) {
+       params.append('monto_max', activeFilters.montoMax);
+     }
+     if (activeFilters.busqueda) {
+       params.append('q', activeFilters.busqueda);
+     }
+
+     const queryString = params.toString();
+     const url = `/api/dashboard${queryString ? `?${queryString}` : ''}`;
+     
+     console.log('Fetching dashboard data with URL:', url);
+     const response = await fetch(url);
+     
+     if (!response.ok) {
+       throw new Error('Error al cargar los datos');
+     }
+
+     const responseData = await response.json();
+     console.log('Datos recibidos:', responseData);
+
+     if (responseData.success) {
+       setData(responseData);
+     } else {
+       throw new Error(responseData.error || 'Error desconocido');
+     }
+   } catch (error) {
+     setError('Error al cargar los datos');
+     console.error(error);
+   } finally {
+     setIsLoading(false);
+     setIsFiltering(false);
+   }
+ }, [currentFilters]);
 
  useEffect(() => {
-   const fetchDashboardData = async () => {
-     try {
-       console.log('Iniciando fetch de datos del dashboard');
-       const response = await fetch('/api/dashboard');
-       
-       if (!response.ok) {
-         throw new Error('Error al cargar los datos');
-       }
-
-       const data = await response.json();
-       console.log('Datos recibidos:', data);
-
-       if (data.success) {
-         setData(data);
-       } else {
-         throw new Error(data.error || 'Error desconocido');
-       }
-     } catch (error) {
-       setError('Error al cargar los datos');
-       console.error(error);
-     } finally {
-       setIsLoading(false);
-     }
-   };
-
    fetchDashboardData();
  }, []);
+
+ const handleFilterChange = useCallback((filters: FilterValues) => {
+   setCurrentFilters(filters);
+   fetchDashboardData(filters);
+ }, [fetchDashboardData]);
 
  const requiereSubida = (comentario: string): boolean => {
   const keywords = [
@@ -178,8 +228,15 @@ export default function DashboardPage() {
        <div className="bg-gray-800 rounded-lg shadow">
          <div className="px-4 py-5 sm:p-6">
            <h2 className="text-xl font-semibold text-white mb-4">
-             Cuentas de Cobro Recientes
+             Mis Cuentas de Cobro
            </h2>
+           
+           {/* Filtros */}
+           <CuentasCobroFilters 
+             onFilterChange={handleFilterChange}
+             resultadosFiltrados={data?.resultadosFiltrados ?? data?.cuentasRecientes?.length ?? 0}
+             isLoading={isFiltering}
+           />
            
            {isLoading ? (
              <div className="text-center py-4">
@@ -188,8 +245,25 @@ export default function DashboardPage() {
            ) : error ? (
              <div className="text-red-500 text-center py-4">{error}</div>
            ) : !data?.cuentasRecientes?.length ? (
-             <div className="text-gray-400 text-center py-4">
-               No hay cuentas de cobro registradas
+             <div className="text-gray-400 text-center py-8">
+               <svg 
+                 xmlns="http://www.w3.org/2000/svg" 
+                 className="h-12 w-12 mx-auto mb-4 text-gray-500" 
+                 fill="none" 
+                 viewBox="0 0 24 24" 
+                 stroke="currentColor"
+               >
+                 <path 
+                   strokeLinecap="round" 
+                   strokeLinejoin="round" 
+                   strokeWidth={1.5} 
+                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                 />
+               </svg>
+               {data?.totalCuentas && data.totalCuentas > 0 
+                 ? 'No se encontraron cuentas con los filtros aplicados'
+                 : 'No hay cuentas de cobro registradas'
+               }
              </div>
            ) : (
              <div className="overflow-x-auto">
@@ -230,6 +304,7 @@ export default function DashboardPage() {
                            ${cuenta.estado === 'Pendiente' ? 'bg-yellow-800 text-yellow-100' : 
                              cuenta.estado === 'Aprobada' ? 'bg-green-800 text-green-100' :
                              cuenta.estado === 'Rechazada' ? 'bg-red-800 text-red-100' :
+                             cuenta.estado === 'En Revisión' ? 'bg-blue-800 text-blue-100' :
                              'bg-gray-800 text-gray-100'}`}>
                            {cuenta.estado}
                          </span>

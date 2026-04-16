@@ -82,10 +82,15 @@ export default function CuentaCobroForm({ proveedorId }: CuentaCobroFormProps) {
 
       let firmaUrl = '';
       if (firma) {
-        const firmaFile = await fetch(firma)
-          .then(res => res.blob())
-          .then(blob => new File([blob], 'firma.png', { type: 'image/png' }));
-        firmaUrl = await uploadToCloudinary(firmaFile, 'firmas');
+        // Si la firma ya es una URL de Cloudinary, usarla directamente
+        if (firma.startsWith('http')) {
+          firmaUrl = firma;
+        } else {
+          const firmaFile = await fetch(firma)
+            .then(res => res.blob())
+            .then(blob => new File([blob], 'firma.png', { type: 'image/png' }));
+          firmaUrl = await uploadToCloudinary(firmaFile, 'firmas');
+        }
       }
 
       const valorTotal = Object.entries(data)
