@@ -3,8 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { DocumentUpload } from '@/components/CargarArchivos/DocumentUpload';
-import { CuentasCobroFilters, FilterValues } from '@/components/Dashboard/CuentasCobroFilters';
-import { Menu, X } from 'lucide-react';
+import {
+ CuentasCobroFilters,
+ FilterValues,
+ OrdenValue,
+ initialFilters,
+} from '@/components/Dashboard/CuentasCobroFilters';
+import { Menu, X, ArrowUp, ArrowDown } from 'lucide-react';
 
 
 interface DashboardData {
@@ -30,20 +35,42 @@ const formatCurrency = (value: number): string => {
  }).format(value);
 };
 
+// Interpreta una fecha 'YYYY-MM-DD' de Airtable como fecha local (evita el
+// corrimiento de un día que provoca el parseo como UTC)
+const parseFecha = (fecha: string): Date | null => {
+ if (!fecha) return null;
+ const soloFecha = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+ const date = soloFecha
+   ? new Date(Number(soloFecha[1]), Number(soloFecha[2]) - 1, Number(soloFecha[3]))
+   : new Date(fecha);
+ return Number.isNaN(date.getTime()) ? null : date;
+};
+
+// Fecha corta y consistente: "26 ago 2026"
+const formatFecha = (fecha: string): string => {
+ const date = parseFecha(fecha);
+ if (!date) return 'Sin fecha';
+ return new Intl.DateTimeFormat('es-CO', {
+   day: '2-digit',
+   month: 'short',
+   year: 'numeric'
+ }).format(date);
+};
+
+// Fecha completa para el tooltip: "martes, 26 de agosto de 2026"
+const formatFechaLarga = (fecha: string): string => {
+ const date = parseFecha(fecha);
+ if (!date) return 'Sin fecha registrada';
+ return new Intl.DateTimeFormat('es-CO', { dateStyle: 'full' }).format(date);
+};
+
 export default function DashboardPage() {
  const [data, setData] = useState<DashboardData | null>(null);
  const [isLoading, setIsLoading] = useState(true);
  const [isFiltering, setIsFiltering] = useState(false);
  const [error, setError] = useState('');
  const [menuOpen, setMenuOpen] = useState(false);
- const [currentFilters, setCurrentFilters] = useState<FilterValues>({
-   estado: 'todas',
-   fechaInicio: '',
-   fechaFin: '',
-   montoMin: '',
-   montoMax: '',
-   busqueda: '',
- });
+ const [currentFilters, setCurrentFilters] = useState<FilterValues>(initialFilters);
 
  const fetchDashboardData = useCallback(async (filters?: FilterValues) => {
    try {
@@ -75,6 +102,9 @@ export default function DashboardPage() {
      }
      if (activeFilters.busqueda) {
        params.append('q', activeFilters.busqueda);
+     }
+     if (activeFilters.orden) {
+       params.append('orden', activeFilters.orden);
      }
 
      const queryString = params.toString();
@@ -112,6 +142,23 @@ export default function DashboardPage() {
    setCurrentFilters(filters);
    fetchDashboardData(filters);
  }, [fetchDashboardData]);
+
+ // Ordenar haciendo clic en el encabezado de la columna
+ const handleSort = useCallback((campo: 'fecha' | 'monto') => {
+   const asc: OrdenValue = campo === 'fecha' ? 'fecha_asc' : 'monto_asc';
+   const desc: OrdenValue = campo === 'fecha' ? 'fecha_desc' : 'monto_desc';
+   const orden: OrdenValue = currentFilters.orden === desc ? asc : desc;
+   handleFilterChange({ ...currentFilters, orden });
+ }, [currentFilters, handleFilterChange]);
+
+ const sortIcon = (campo: 'fecha' | 'monto') => {
+   const asc = currentFilters.orden === (campo === 'fecha' ? 'fecha_asc' : 'monto_asc');
+   const desc = currentFilters.orden === (campo === 'fecha' ? 'fecha_desc' : 'monto_desc');
+   if (!asc && !desc) return null;
+   return asc
+     ? <ArrowUp className="inline h-3 w-3 ml-1" />
+     : <ArrowDown className="inline h-3 w-3 ml-1" />;
+ };
 
  const requiereSubida = (comentario: string): boolean => {
   const keywords = [
@@ -233,6 +280,7 @@ export default function DashboardPage() {
            
            {/* Filtros */}
            <CuentasCobroFilters 
+             filters={currentFilters}
              onFilterChange={handleFilterChange}
              resultadosFiltrados={data?.resultadosFiltrados ?? data?.cuentasRecientes?.length ?? 0}
              isLoading={isFiltering}
@@ -271,13 +319,27 @@ export default function DashboardPage() {
                  <thead>
                    <tr>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                       Fecha
+                       <button
+                         onClick={() => handleSort('fecha')}
+                         className="uppercase tracking-wider hover:text-white transition-colors"
+                         title="Ordenar por fecha"
+                       >
+                         Fecha
+                         {sortIcon('fecha')}
+                       </button>
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                        Descripción
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                       Valor Total
+                       <button
+                         onClick={() => handleSort('monto')}
+                         className="uppercase tracking-wider hover:text-white transition-colors"
+                         title="Ordenar por valor total"
+                       >
+                         Valor Total
+                         {sortIcon('monto')}
+                       </button>
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                        Estado
@@ -290,13 +352,16 @@ export default function DashboardPage() {
                  <tbody className="divide-y divide-gray-700">
                    {data.cuentasRecientes.map((cuenta) => (
                      <tr key={cuenta.id} className="hover:bg-gray-700/50">
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                         {new Date(cuenta.fecha).toLocaleDateString('es-CO')}
+                       <td
+                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 tabular-nums"
+                         title={formatFechaLarga(cuenta.fecha)}
+                       >
+                         {formatFecha(cuenta.fecha)}
                        </td>
                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                          {cuenta.descripcion}
                        </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 tabular-nums">
                          {formatCurrency(cuenta.valorTotal)}
                        </td>
                        <td className="px-6 py-4 whitespace-nowrap">

@@ -25,9 +25,10 @@ export async function GET(request: NextRequest) {
     const montoMin = searchParams.get('monto_min');
     const montoMax = searchParams.get('monto_max');
     const busqueda = searchParams.get('q');
+    const orden = searchParams.get('orden') || 'fecha_desc';
 
     console.log('Buscando proveedor:', proveedorId);
-    console.log('Filtros aplicados:', { estado, fechaInicio, fechaFin, montoMin, montoMax, busqueda });
+    console.log('Filtros aplicados:', { estado, fechaInicio, fechaFin, montoMin, montoMax, busqueda, orden });
 
     // Obtener los datos del proveedor
     const proveedor = await base('Proveedores').find(proveedorId);
@@ -48,9 +49,9 @@ export async function GET(request: NextRequest) {
       filterConditions.push(`{Estado} = '${estado}'`);
     }
     
-    // Filtro por fecha de inicio
+    // Filtro por fecha de inicio (inclusivo: incluye la fecha seleccionada)
     if (fechaInicio) {
-      filterConditions.push(`IS_AFTER({Fecha}, '${fechaInicio}')`);
+      filterConditions.push(`IS_AFTER({Fecha}, DATEADD('${fechaInicio}', -1, 'days'))`);
     }
     
     // Filtro por fecha de fin
@@ -83,11 +84,26 @@ export async function GET(request: NextRequest) {
 
     console.log('Fórmula de filtro:', filterFormula);
 
+    // Ordenamiento solicitado desde el dashboard
+    const SORT_OPTIONS: Record<string, { field: string; direction: 'asc' | 'desc' }[]> = {
+      fecha_desc: [{ field: 'Fecha', direction: 'desc' }],
+      fecha_asc: [{ field: 'Fecha', direction: 'asc' }],
+      monto_desc: [{ field: 'ValorTotal', direction: 'desc' }],
+      monto_asc: [{ field: 'ValorTotal', direction: 'asc' }],
+      estado_asc: [
+        { field: 'Estado', direction: 'asc' },
+        { field: 'Fecha', direction: 'desc' }
+      ],
+    };
+    const sort = SORT_OPTIONS[orden] || SORT_OPTIONS.fecha_desc;
+
+    console.log('Orden aplicado:', sort);
+
     // Buscar las cuentas de cobro con los filtros aplicados
     const records = await base('CuentasCobro')
       .select({
         filterByFormula: filterFormula,
-        sort: [{ field: 'Fecha', direction: 'desc' }]
+        sort
       })
       .all();
 
@@ -122,7 +138,8 @@ export async function GET(request: NextRequest) {
         fechaFin,
         montoMin,
         montoMax,
-        busqueda
+        busqueda,
+        orden
       }
     };
 
